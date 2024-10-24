@@ -20,6 +20,7 @@ import (
 
 // ZitadelManager zitadel manager client instance.
 type ZitadelManager struct {
+	Organizations      []string
 	managementEndpoint string
 	httpClient         ManagerHTTPClient
 	credentials        ManagerCredentials
@@ -34,6 +35,7 @@ type ZitadelClientConfig struct {
 	GrantType          string
 	TokenEndpoint      string
 	ManagementEndpoint string
+	Organizations      []string
 }
 
 // ZitadelCredentials zitadel authentication information.
