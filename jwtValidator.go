@@ -99,6 +99,11 @@ func NewJWTValidator(ctx context.Context, issuer string, audienceList []string, 
 				return token, errors.New("invalid audience")
 			}
 			// Verify 'issuer' claim
+
+			// DEBUGGING
+			var iss, err = token.Claims.(jwt.MapClaims).GetIssuer()
+			log.Debugf("Test verifyIssuer: " + iss + " " + issuer)
+
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false)
 			if !checkIss {
 				return token, errors.New("invalid issuer")
