@@ -101,7 +101,7 @@ func NewJWTValidator(ctx context.Context, issuer string, audienceList []string, 
 			// Verify 'issuer' claim
 
 			// DEBUGGING
-			var iss, err = token.Claims.(jwt.MapClaims).GetIssuer()
+			var iss = token.Claims.(jwt.MapClaims)["iss"].(string)
 			log.Debugf("Test verifyIssuer: " + iss + " " + issuer)
 
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false)
