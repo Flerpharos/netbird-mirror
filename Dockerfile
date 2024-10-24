@@ -7,7 +7,7 @@ WORKDIR netbird
 
 COPY zitadel.go management/server/idp/zitadel.go
 COPY idp.go management/server/idp/idp.go
-COPY jwtValidator.go management/server/jwtclaims/jwtValidator.go
+# COPY jwtValidator.go management/server/jwtclaims/jwtValidator.go
 
 RUN CGO_ENABLED=1 go build -o netbird-mgmt -a ./management
 
