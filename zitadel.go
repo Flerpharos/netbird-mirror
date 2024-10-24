@@ -312,7 +312,7 @@ func (zm *ZitadelManager) CreateUser(ctx context.Context, email, name, accountID
 		return nil, err
 	}
 
-	body, err := zm.post("users/human/_import", string(payload), map[string]string{"x-zitadel-orgid": zm.Organizations[0]})
+	body, err := zm.post(ctx, "users/human/_import", string(payload), map[string]string{"x-zitadel-orgid": zm.Organizations[0]})
 	if err != nil {
 		return nil, err
 	}
@@ -359,24 +359,28 @@ func (zm *ZitadelManager) GetUserByEmail(ctx context.Context, email string) ([]*
 		return nil, err
 	}
 
-	body, err := zm.post(ctx, "users/_search", string(payload))
-	if err != nil {
-		return nil, err
-	}
-
-	if zm.appMetrics != nil {
-		zm.appMetrics.IDPMetrics().CountGetUserByEmail()
-	}
-
-	var profiles struct{ Result []zitadelProfile }
-	err = zm.helper.Unmarshal(body, &profiles)
-	if err != nil {
-		return nil, err
-	}
-
 	users := make([]*UserData, 0)
-	for _, profile := range profiles.Result {
-		users = append(users, profile.userData())
+	for _, organization := range zm.Organizations {
+
+		body, err := zm.post(ctx, "users/_search", string(payload), map[string]string{"x-zitadel-orgid": organization})
+		if err != nil {
+			return nil, err
+		}
+	
+		if zm.appMetrics != nil {
+			zm.appMetrics.IDPMetrics().CountGetUserByEmail()
+		}
+	
+		var profiles struct{ Result []zitadelProfile }
+		err = zm.helper.Unmarshal(body, &profiles)
+		if err != nil {
+			return nil, err
+		}
+	
+		
+		for _, profile := range profiles.Result {
+			users = append(users, profile.userData())
+		}
 	}
 
 	return users, nil
@@ -387,7 +391,7 @@ func (zm *ZitadelManager) GetUserDataByID(ctx context.Context, userID string, ap
 	var err_ error
 	
 	for _, organization := range zm.Organizations {
-		body, err := zm.get("users/"+userID, nil, map[string]string{"x-zitadel-orgid": organization})
+		body, err := zm.get(ctx, "users/"+userID, nil, map[string]string{"x-zitadel-orgid": organization})
 		if err != nil {
 			err_ = err
 			continue
@@ -418,7 +422,7 @@ func (zm *ZitadelManager) GetAccount(ctx context.Context, accountID string) ([]*
 
 	for _, organization := range zm.Organizations {
 
-		body, err := zm.post("users/_search", "", map[string]string{"x-zitadel-orgid": organization})
+		body, err := zm.post(ctx, "users/_search", "", map[string]string{"x-zitadel-orgid": organization})
 		if err != nil {
 			return nil, err
 		}
@@ -452,7 +456,7 @@ func (zm *ZitadelManager) GetAllAccounts(ctx context.Context) (map[string][]*Use
 
 	for _, organization := range zm.Organizations {
 	
-		body, err := zm.post("users/_search", "", map[string]string{"x-zitadel-orgid": organization})
+		body, err := zm.post(ctx, "users/_search", "", map[string]string{"x-zitadel-orgid": organization})
 		if err != nil {
 			return nil, err
 		}
@@ -499,7 +503,7 @@ func (zm *ZitadelManager) InviteUserByID(ctx context.Context, userID string) err
 	}
 
 	// don't care about the body in the response
-	_, err = zm.post(fmt.Sprintf("users/%s/_resend_initialization", userID), string(payload), 
+	_, err = zm.post(ctx, fmt.Sprintf("users/%s/_resend_initialization", userID), string(payload), 
 									map[string]string{"x-zitadel-orgid": zm.Organizations[0]})
 	return err
 }
